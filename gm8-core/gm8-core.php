@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GM8 Core
  * Description: Managed admin cleanup for hosted client sites (dashboard widgets, welcome panel, selective notices). For Gas Mark 8 hosting clients only.
- * Version: 0.1.2
+ * Version: 1.0.0
  * Author: Gas Mark 8, Ltd.
  * Author URI: https://gasmark8.com
  * Requires at least: 5.8
@@ -347,6 +347,18 @@ function gm8_cleanup_plugin_file() {
 	return plugin_basename(__FILE__); // gm8-core/gm8-core.php
 }
 
+/**
+ * Log updater/debug lines when WP_DEBUG and WP_DEBUG_LOG are enabled.
+ *
+ * @param string $message
+ */
+function gm8_cleanup_debug_log($message) {
+	if (defined('WP_DEBUG') && WP_DEBUG && defined('WP_DEBUG_LOG') && WP_DEBUG_LOG) {
+		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+		error_log('[gm8-core] ' . $message);
+	}
+}
+
 function gm8_cleanup_github_latest_release() {
 	$cache_key = 'gm8_cleanup_github_release';
 	$cached = get_site_transient($cache_key);
@@ -371,6 +383,7 @@ function gm8_cleanup_github_latest_release() {
 	]);
 
 	if (is_wp_error($res)) {
+		gm8_cleanup_debug_log('GitHub API error: ' . $res->get_error_message());
 		set_site_transient($cache_key, ['error' => $res->get_error_message()], 30 * MINUTE_IN_SECONDS);
 		return null;
 	}
@@ -378,12 +391,15 @@ function gm8_cleanup_github_latest_release() {
 	$code = (int) wp_remote_retrieve_response_code($res);
 	$body = (string) wp_remote_retrieve_body($res);
 	if ($code < 200 || $code >= 300 || $body === '') {
+		// 404 often means no published releases yet (GET .../releases/latest).
+		gm8_cleanup_debug_log('GitHub API HTTP ' . $code . ' for releases/latest. Body length: ' . strlen($body) . '.');
 		set_site_transient($cache_key, ['error' => 'http_' . $code], 30 * MINUTE_IN_SECONDS);
 		return null;
 	}
 
 	$data = json_decode($body, true);
 	if (!is_array($data) || empty($data['tag_name'])) {
+		gm8_cleanup_debug_log('GitHub API returned unexpected JSON (no tag_name).');
 		set_site_transient($cache_key, ['error' => 'bad_json'], 30 * MINUTE_IN_SECONDS);
 		return null;
 	}
@@ -464,16 +480,27 @@ function gm8_cleanup_do_silent_update() {
 
 	$release = gm8_cleanup_github_latest_release();
 	if (!$release) {
+		gm8_cleanup_debug_log('No release data from GitHub (see HTTP errors above, or no published release / 404).');
 		return;
 	}
 
 	$latest = gm8_cleanup_release_version($release['tag_name']);
 	if ($latest === '' || version_compare($latest, $current, '<=')) {
+		// Only log the common trap: installed "0.10.0" is greater than GitHub "0.1.2" in PHP's version_compare.
+		if ($latest !== '' && version_compare($current, $latest, '>')) {
+			gm8_cleanup_debug_log(sprintf(
+				'Skip update: installed %s is newer than GitHub release %s (%s). Fix: use a higher release tag (e.g. 1.0.0) or correct a mistaken Version header (avoid 0.10.x if you meant 0.1.x).',
+				$current,
+				$latest,
+				isset($release['tag_name']) ? (string) $release['tag_name'] : ''
+			));
+		}
 		return;
 	}
 
 	$package = gm8_cleanup_find_release_zip_url($release);
 	if ($package === '') {
+		gm8_cleanup_debug_log('Skip update: latest release has no gm8-core.zip (or .zip) asset attached.');
 		return;
 	}
 

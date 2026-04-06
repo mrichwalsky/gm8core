@@ -95,6 +95,18 @@ The plugin checks **`/releases/latest`** on the configured repo and, when a newe
 
 4. Publish the release. Sites with the plugin will pick up the update on a future cron run.
 
+**Pushing to `main` alone does not update sites.** The plugin calls GitHub’s **`/releases/latest`** API. You must [publish a Release](https://github.com/mrichwalsky/gm8core/releases/new) with a tag and attach **`gm8-core.zip`**.
+
+### Version numbers (important)
+
+Updates use PHP’s `version_compare()`. **Do not use `0.10.0` if you mean “0.1.0”.** In PHP, `0.10.0` is **greater than** `0.1.2`, so the updater will **never** “upgrade” from `0.10.0` down to a `0.1.x` GitHub tag. Use normal semver (`0.1.0`, `0.2.0`, …) or jump to **`1.0.0`** to recover.
+
+### Troubleshooting
+
+- **Enable logging** (in `wp-config.php`): `define( 'WP_DEBUG', true );` and `define( 'WP_DEBUG_LOG', true );` — the plugin logs GitHub/API issues and “skip” reasons to `wp-content/debug.log` when those are on.
+- **Clear cached release data** after fixing GitHub: delete the site transient `gm8_cleanup_github_release` (e.g. with a small `wp eval` or a transient plugin), or wait for the cache to expire (errors ~30 minutes, success ~6 hours).
+- **Test the hook manually:** `wp eval "do_action('gm8_cleanup_silent_update_check');"`
+
 To **turn off** remote updates for a site:
 
 ```php
