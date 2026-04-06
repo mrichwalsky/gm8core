@@ -3,7 +3,31 @@
 WordPress plugin for hosted client sites: **admin cleanup** (dashboard widgets, welcome panel, selective notice suppression) and **silent updates** from [GitHub Releases](https://github.com/mrichwalsky/gm8core/releases).
 
 - **Repository:** [github.com/mrichwalsky/gm8core](https://github.com/mrichwalsky/gm8core)
-- **Plugin slug:** `gm8-core` (install path: `wp-content/plugins/gm8-core/`)
+- **Plugin slug:** `gm8-core` (install path on a site: `wp-content/plugins/gm8-core/`)
+
+## Repository layout
+
+The plugin lives **one level** under the repo root so it matches what WordPress expects inside a release zip:
+
+```text
+gm8core/
+  gm8-core/
+    gm8-core.php    ← plugin main file
+  README.md
+  LICENSE
+  .gitignore
+```
+
+Do **not** nest the plugin under `wp-content/plugins/` in this repository. That would produce zips like `wp-content/plugins/gm8-core/...`, and the WordPress upgrader would install or upgrade the plugin in the wrong place.
+
+### Building `gm8-core.zip` for a GitHub Release
+
+Create a zip whose **root folder** is `gm8-core/` (containing `gm8-core.php`). For example, from the repo root:
+
+- **Windows (PowerShell):** `Compress-Archive -Path gm8-core -DestinationPath gm8-core.zip`
+- **macOS/Linux:** `zip -r gm8-core.zip gm8-core`
+
+Upload **`gm8-core.zip`** as a release asset (not the GitHub “Source code” zipball).
 
 ## Requirements
 
@@ -15,13 +39,13 @@ WordPress plugin for hosted client sites: **admin cleanup** (dashboard widgets, 
 
 1. Copy the `gm8-core` folder into `wp-content/plugins/`:
 
-   ```
+   ```text
    wp-content/plugins/gm8-core/gm8-core.php
    ```
 
 2. Activate **GM8 Core** in **Plugins**.
 
-Or install via WP-CLI from a release zip (see [Releases](#releases)):
+Or install via WP-CLI from a release zip (see [Releases](#silent-updates-github)):
 
 ```bash
 wp plugin install /path/to/gm8-core.zip --activate
@@ -63,15 +87,9 @@ The plugin checks **`/releases/latest`** on the configured repo and, when a newe
 
 ### Releases
 
-1. Bump the plugin header `Version:` in `gm8-core.php` to match the release (e.g. `0.2.0`).
+1. Bump the plugin header `Version:` in `gm8-core/gm8-core.php` to match the release (e.g. `0.2.0`).
 2. Create a **GitHub Release** with a tag like `v0.2.0` (or `0.2.0`). The tag is parsed (leading `v` is stripped).
-3. **Attach a release asset** named **`gm8-core.zip`**.
-
-   The zip must unpack so WordPress sees:
-
-   ```
-   gm8-core/gm8-core.php
-   ```
+3. **Attach a release asset** named **`gm8-core.zip`**, built as [above](#building-gm8-corezip-for-a-github-release) so the archive contains `gm8-core/gm8-core.php` at the top level.
 
    Do **not** rely on GitHub’s auto-generated “Source code (zip)” archives for upgrades; folder names are not stable for the WordPress upgrader.
 
@@ -85,10 +103,10 @@ define('GM8_CLEANUP_GITHUB_REPO', '');
 
 ## Development
 
-- Main file: [`wp-content/plugins/gm8-core/gm8-core.php`](wp-content/plugins/gm8-core/gm8-core.php)
+- Main file: [`gm8-core/gm8-core.php`](gm8-core/gm8-core.php)
 
 ```bash
-php -l wp-content/plugins/gm8-core/gm8-core.php
+php -l gm8-core/gm8-core.php
 ```
 
 ## License

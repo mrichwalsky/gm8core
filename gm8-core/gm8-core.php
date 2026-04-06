@@ -2,7 +2,7 @@
 /**
  * Plugin Name: GM8 Core
  * Description: Managed admin cleanup for hosted client sites (dashboard widgets, welcome panel, selective notices). For Gas Mark 8 hosting clients only.
- * Version: 0.1.0
+ * Version: 0.1.1
  * Author: Gas Mark 8, Ltd.
  * Requires at least: 5.8
  * Requires PHP: 7.4
@@ -147,10 +147,12 @@ function gm8_cleanup_dashboard() {
 		['id' => 'dashboard_plugins', 'context' => 'normal'],
 
 		['id' => 'e-dashboard-overview', 'context' => 'side'],
+		['id' => 'e-dashboard-overview', 'context' => 'normal'],
 		['id' => 'cn_dashboard_stats', 'context' => 'side'],
 		['id' => 'rg_forms_dashboard', 'context' => 'side'],
 		['id' => 'themeisle', 'context' => 'side'],
 		['id' => 'wpseo-dashboard-overview', 'context' => 'side'],
+		['id' => 'wpseo-dashboard-overview', 'context' => 'normal'],
 		['id' => 'wordfence_activity_report_widget', 'context' => 'side'],
 		['id' => 'wpdm_social_overview', 'context' => 'side'],
 	];

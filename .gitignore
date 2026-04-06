@@ -1,3 +1,2 @@
-# Local build artifacts
-wp-content/plugins/gm8-core.zip
+# Local release zips (build at repo root or inside gm8-core/)
 *.zip
