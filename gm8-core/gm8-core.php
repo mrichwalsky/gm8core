@@ -2,8 +2,9 @@
 /**
  * Plugin Name: GM8 Core
  * Description: Managed admin cleanup for hosted client sites (dashboard widgets, welcome panel, selective notices). For Gas Mark 8 hosting clients only.
- * Version: 0.1.1
+ * Version: 0.1.2
  * Author: Gas Mark 8, Ltd.
+ * Author URI: https://gasmark8.com
  * Requires at least: 5.8
  * Requires PHP: 7.4
  */
